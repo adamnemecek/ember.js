@@ -1,29 +1,27 @@
-import Ember from 'ember-metal/core';  // for Ember.ORDER_DEFINITION
 import { typeOf } from 'ember-metal/utils';
 import Comparable from 'ember-runtime/mixins/comparable';
 
-// Used by Ember.compare
-Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
-  'undefined',
-  'null',
-  'boolean',
-  'number',
-  'string',
-  'array',
-  'object',
-  'instance',
-  'function',
-  'class',
-  'date'
-];
+Ember.TYPE_ORDER = {
+  'undefined': 0,
+  'null': 1,
+  'boolean': 2,
+  'number': 3,
+  'string': 4,
+  'array': 5,
+  'object': 6,
+  'instance': 7,
+  'function': 8,
+  'class': 9,
+  'date': 10
+};
 
 //
 // the spaceship operator
 //
-var spaceship = function(a, b) {
+function spaceship(a, b) {
   var diff = a - b;
   return (diff > 0) - (diff < 0);
-};
+}
 
 /**
  This will compare two javascript values of possibly different types.
@@ -66,24 +64,7 @@ export default function compare(v, w) {
     }
   }
 
-  // If we haven't yet generated a reverse-mapping of Ember.ORDER_DEFINITION,
-  // do so now.
-  var mapping = Ember.ORDER_DEFINITION_MAPPING;
-
-  if (!mapping) {
-    var order = Ember.ORDER_DEFINITION;
-
-    mapping = Ember.ORDER_DEFINITION_MAPPING = {};
-
-    for (var idx = 0; idx < order.length; idx++) {
-      mapping[order[idx]] = idx;
-    }
-
-    // We no longer need Ember.ORDER_DEFINITION.
-    delete Ember.ORDER_DEFINITION;
-  }
-
-  var res = spaceship(mapping[type1], mapping[type2]);
+  var res = spaceship(Ember.TYPE_ORDER[type1], Ember.TYPE_ORDER[type2]);
   if (res !== 0) {
     return res;
   }
@@ -95,12 +76,12 @@ export default function compare(v, w) {
       return spaceship(v,w);
 
     case 'string':
-      return spaceship(v.localeCompare(w), 0);
+      return Math.sign(v.localeCompare(w));
 
     case 'array':
-      var vLen = v.length,
-          wLen = w.length,
-          len = Math.min(vLen, wLen);
+      var vLen = v.length;
+      var wLen = w.length;
+      var len = Math.min(vLen, wLen);
 
       for (var i = 0; i < len; i++) {
         var r = compare(v[i], w[i]);
