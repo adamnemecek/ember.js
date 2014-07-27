@@ -1,7 +1,7 @@
 import { typeOf } from 'ember-metal/utils';
 import Comparable from 'ember-runtime/mixins/comparable';
 
-Ember.TYPE_ORDER = {
+var TYPE_ORDER = {
   'undefined': 0,
   'null': 1,
   'boolean': 2,
@@ -47,8 +47,8 @@ function spaceship(a, b) {
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
 export default function compare(v, w) {
-  if (v === w) { 
-    return 0; 
+  if (v === w) {
+    return 0;
   }
 
   var type1 = typeOf(v);
@@ -64,7 +64,7 @@ export default function compare(v, w) {
     }
   }
 
-  var res = spaceship(Ember.TYPE_ORDER[type1], Ember.TYPE_ORDER[type2]);
+  var res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
   if (res !== 0) {
     return res;
   }
@@ -76,7 +76,7 @@ export default function compare(v, w) {
       return spaceship(v,w);
 
     case 'string':
-      return Math.sign(v.localeCompare(w));
+      return spaceship(v.localeCompare(w), 0);
 
     case 'array':
       var vLen = v.length;
